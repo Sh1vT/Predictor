@@ -3,6 +3,7 @@ lessons = {
         "hello": "https://example.com/videos/hello.mp4",
         "i love you": "https://example.com/videos/i_love_you.mp4",
         "return": "https://example.com/videos/return.mp4",
+        "yes": "https://example.com/videos/return.mp4"
     },
     "Intermediate Signs": {
         "thank you": "https://example.com/videos/thank_you.mp4",

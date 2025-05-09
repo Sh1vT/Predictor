@@ -252,17 +252,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Set selectedWord from the URL
-function getLessonFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const lesson = params.get('lesson');
-    return lesson ? lesson.replace(/_/g, ' ') : null;
-}
-selectedWord = getLessonFromURL();
+// Get the selected lesson from URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const selectedLesson = urlParams.get('lesson');
 
-// Only update the selectedWord display if the element exists in the DOM
-if (selectedWord && document.getElementById('selectedWord')) {
-    document.getElementById('selectedWord').textContent = selectedWord;
+// Update selectedWord with the lesson from URL
+if (selectedLesson) {
+    selectedWord = decodeURIComponent(selectedLesson);
+    console.log('Selected word updated:', selectedWord);
+}
+
+// Display the selected lesson
+if (selectedLesson) {
+    const selectedWordDiv = document.createElement('div');
+    selectedWordDiv.id = 'selectedWord';
+    selectedWordDiv.className = 'selected-word';
+    selectedWordDiv.textContent = selectedWord;
+    selectedWordDiv.style.position = 'fixed';
+    selectedWordDiv.style.top = '20px';
+    selectedWordDiv.style.right = '20px';
+    selectedWordDiv.style.zIndex = '1000';
+    selectedWordDiv.style.backgroundColor = 'rgba(173, 216, 230, 0.9)'; // Light blue with slight transparency
+    selectedWordDiv.style.padding = '10px 20px';
+    selectedWordDiv.style.borderRadius = '5px';
+    selectedWordDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    document.body.appendChild(selectedWordDiv);
 }
 
 // Function to update detection feedback

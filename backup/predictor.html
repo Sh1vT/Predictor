@@ -61,8 +61,6 @@
                     <button class="btn-primary" onclick="startWebcam()">Start Webcam</button>
                     <button class="btn-primary" onclick="stopWebcam()">Stop Webcam</button>
                 </div>
-                <!-- Selected Word Display -->
-                <div id="selectedWord" class="selected-word"></div>
                 <!-- Counter moved below webcam -->
                 <div class="output-container">
                     <h2>Practice the Sign to Learn</h2>
@@ -95,6 +93,86 @@
     </footer> -->
 
     <script src="scripts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        // Add this to your existing script
+        function updateDetectionFeedback(words) {
+            const status = document.querySelector('.detection-status');
+            const log = document.querySelector('.detection-log');
+            
+            if (words && words.length > 0) {
+                const latestWord = words[words.length - 1];
+                status.textContent = `Detected: ${latestWord}`;
+                status.style.color = '#2ecc71'; // Green color for success
+                
+                // Add to log
+                const logEntry = document.createElement('div');
+                logEntry.textContent = `${new Date().toLocaleTimeString()}: ${latestWord}`;
+                logEntry.className = 'log-entry';
+                log.insertBefore(logEntry, log.firstChild);
+                
+                // Keep only last 5 entries
+                while (log.children.length > 5) {
+                    log.removeChild(log.lastChild);
+                }
+
+                // If we have multiple words, show a hint about sentence formation
+                if (words.length > 1) {
+                    const sentenceHint = document.createElement('div');
+                    sentenceHint.className = 'sentence-hint';
+                    sentenceHint.textContent = `Words detected: ${words.join(', ')}`;
+                    log.insertBefore(sentenceHint, log.firstChild);
+                }
+            } else {
+                status.textContent = 'Waiting for detection...';
+                status.style.color = '#666';
+            }
+        }
+
+        // Modify your existing WebSocket message handler to include this
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log('Received WebSocket message:', data); // Debug log
+            
+            if (Array.isArray(data)) {
+                // Get the most recently detected word
+                const latestWord = data[data.length - 1];
+                
+                // Update status with latest word
+                const status = document.querySelector('.detection-status');
+                if (latestWord) {
+                    status.textContent = `Detected: ${latestWord}`;
+                    status.style.color = '#2ecc71'; // Green color for success
+                    
+                    // Add to log
+                    const log = document.querySelector('.detection-log');
+                    const logEntry = document.createElement('div');
+                    logEntry.textContent = `${new Date().toLocaleTimeString()}: ${latestWord}`;
+                    logEntry.className = 'log-entry';
+                    log.insertBefore(logEntry, log.firstChild);
+                    
+                    // Keep only last 5 entries
+                    while (log.children.length > 5) {
+                        log.removeChild(log.lastChild);
+                    }
+
+                    // If we have multiple words, show them as a sentence
+                    if (data.length > 1) {
+                        const sentenceHint = document.createElement('div');
+                        sentenceHint.className = 'sentence-hint';
+                        sentenceHint.textContent = `Sentence: ${data.join(' ')}`;
+                        log.insertBefore(sentenceHint, log.firstChild);
+                    }
+                }
+            }
+            
+            // Update counter if provided
+            if (data.repetitions_remaining !== undefined) {
+                const counterValue = document.querySelector('.counter-value');
+                if (counterValue) {
+                    counterValue.textContent = data.repetitions_remaining;
+                }
+            }
+        };
+    </script>
 </body>
 </html>
