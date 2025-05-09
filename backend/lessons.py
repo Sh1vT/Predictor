@@ -32,13 +32,11 @@ lessons = {
         "fine": "https://example.com/videos/return.mp4",
         "i dont understand": "https://example.com/videos/return.mp4",
         "like": "https://example.com/videos/return.mp4",
-        "forgive": "https://example.com/videos/return.mp4",
         "stand": "https://example.com/videos/return.mp4",
         "want": "https://example.com/videos/return.mp4",
         "what": "https://example.com/videos/return.mp4",
         "when": "https://example.com/videos/return.mp4",
         "where": "https://example.com/videos/return.mp4",
-        "what is your name": "https://example.com/videos/return.mp4",
     },
     "Sentence Formation": {
         "Hello! How are you?": "https://example.com/videos/how_are_you.mp4",
