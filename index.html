@@ -41,7 +41,6 @@
             <div id="lessons-section" class="lessons-section">
                 <h2>Learning Path</h2>
                 <div class="lessons-container">
-                    
                         <div class="lessons-content">
                             <div class="dropdown-container">
                                 <!-- Beginner Signs -->
@@ -136,65 +135,41 @@
             </div>
             <div id="resources-section" class="resources-section">
                 <h2>Resources</h2>
-                <div class="dropdown-container">
-                    <!-- Articles -->
-                    <div class="dropdown" data-category="articles">
-                        <div class="dropdown-header" onclick="toggleDropdown('articles')">
-                            <h2>Articles</h2>
-                            <span class="dropdown-arrow">▼</span>
-                        </div>
-                        <div class="dropdown-content" id="articles">
-                            <div class="grid-layout">
-                                <a href="#" class="resource-link"><span class="resource-icon">📄</span>Sign Language Learning Techniques</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📄</span>History of Sign Language</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📄</span>Modern Sign Language Education</a>
-                            </div>
-                        </div>
+                <div class="resources-grid">
+                    <div class="resource-column">
+                        <h3>Articles</h3>
+                        <ul>
+                            <li><a href="#">Sign Language Learning Techniques</a></li>
+                            <li><a href="#">History of Sign Language</a></li>
+                            <li><a href="#">Modern Sign Language Education</a></li>
+                        </ul>
                     </div>
 
-                    <!-- Research Papers -->
-                    <div class="dropdown" data-category="research-papers">
-                        <div class="dropdown-header" onclick="toggleDropdown('research-papers')">
-                            <h2>Research Papers</h2>
-                            <span class="dropdown-arrow">▼</span>
-                        </div>
-                        <div class="dropdown-content" id="research-papers">
-                            <div class="grid-layout">
-                                <a href="#" class="resource-link"><span class="resource-icon">📑</span>Neural Networks in Sign Language Recognition</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📑</span>Sign Language Translation Systems</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📑</span>Machine Learning Approaches to Sign Language</a>
-                            </div>
-                        </div>
+                    <div class="resource-column">
+                        <h3>Research Papers</h3>
+                        <ul>
+                            <li><a href="#">Neural Networks in Sign Language Recognition</a></li>
+                            <li><a href="#">Sign Language Translation Systems</a></li>
+                            <li><a href="#">Machine Learning Approaches to Sign Language</a></li>
+                        </ul>
                     </div>
 
-                    <!-- GitHub Repositories -->
-                    <div class="dropdown" data-category="github-repos">
-                        <div class="dropdown-header" onclick="toggleDropdown('github-repos')">
-                            <h2>GitHub Repositories</h2>
-                            <span class="dropdown-arrow">▼</span>
-                        </div>
-                        <div class="dropdown-content" id="github-repos">
-                            <div class="grid-layout">
-                                <a href="#" class="resource-link"><span class="resource-icon">📦</span>Sign Language Recognition Models</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📦</span>Open Source Sign Language Tools</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">📦</span>Sign Language Learning Applications</a>
-                            </div>
-                        </div>
+                    <div class="resource-column">
+                        <h3>GitHub Repositories</h3>
+                        <ul>
+                            <li><a href="#">Sign Language Recognition Models</a></li>
+                            <li><a href="#">Open Source Sign Language Tools</a></li>
+                            <li><a href="#">Sign Language Learning Applications</a></li>
+                        </ul>
                     </div>
 
-                    <!-- Video Tutorials -->
-                    <div class="dropdown" data-category="video-tutorials">
-                        <div class="dropdown-header" onclick="toggleDropdown('video-tutorials')">
-                            <h2>Video Tutorials</h2>
-                            <span class="dropdown-arrow">▼</span>
-                        </div>
-                        <div class="dropdown-content" id="video-tutorials">
-                            <div class="grid-layout">
-                                <a href="#" class="resource-link"><span class="resource-icon">🎥</span>Basic Sign Language Course</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">🎥</span>Advanced Sign Language Techniques</a>
-                                <a href="#" class="resource-link"><span class="resource-icon">🎥</span>Sign Language for Beginners</a>
-                            </div>
-                        </div>
+                    <div class="resource-column">
+                        <h3>Video Tutorials</h3>
+                        <ul>
+                            <li><a href="#">Basic Sign Language Course</a></li>
+                            <li><a href="#">Advanced Sign Language Techniques</a></li>
+                            <li><a href="#">Sign Language for Beginners</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -274,8 +249,47 @@
             }
         }
 
-        // Populate dropdowns when page loads
-        document.addEventListener('DOMContentLoaded', populateDropdowns);
+        // Function to handle scroll-based tab activation
+        function handleScroll() {
+            const sections = document.querySelectorAll('.content-sections > div');
+            const navItems = document.querySelectorAll('.tab-nav li');
+            
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                const offset = 100; // Offset to trigger slightly before reaching the section
+                
+                if (rect.top <= offset && rect.bottom >= offset) {
+                    // Remove active class from all nav items
+                    navItems.forEach(item => item.classList.remove('active'));
+                    // Add active class to corresponding nav item
+                    navItems[index].classList.add('active');
+                }
+            });
+        }
+
+        // Function to handle click-based tab activation
+        function handleTabClick(e) {
+            const navItems = document.querySelectorAll('.tab-nav li');
+            navItems.forEach(item => item.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+        }
+
+        // Add event listeners when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDropdowns();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', handleScroll);
+            
+            // Add click event listeners to nav items
+            const navItems = document.querySelectorAll('.tab-nav li');
+            navItems.forEach(item => {
+                item.addEventListener('click', handleTabClick);
+            });
+            
+            // Initial check for active section
+            handleScroll();
+        });
     </script>
 </body>
 </html> 
