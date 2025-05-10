@@ -58,18 +58,59 @@ function openSocket(url = null) {
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        const trimmedData = data.map(item => item.split('_')[0]);
+        console.log("The selected word is: " + selectedWord);
+        console.log('Received WebSocket message:', data); // Debug log
         
-        // Check if any of the received words match the selected word
-        if (selectedWord && trimmedData.includes(selectedWord)) {
-            if (currentCount > 0) {
-                currentCount--;
-                updateCounter(currentCount);
-                
-                if (currentCount === 0) {
-                    // Play a success sound or show a completion message
-                    console.log('Gesture sequence completed!');
+        if (Array.isArray(data)) {
+            // Get the most recently detected word
+            const latestWord = data[data.length - 1];
+            
+            // Check if the detected word matches the selected word
+            if (selectedWord && latestWord === selectedWord) {
+                if (currentCount > 0) {
+                    currentCount--;
+                    updateCounter(currentCount);
+                    
+                    if (currentCount === 0) {
+                        console.log('Gesture sequence completed!');
+                        triggerConfetti(); // Trigger confetti animation
+                    }
                 }
+            }
+            
+            // Update status with latest word
+            const status = document.querySelector('.detection-status');
+            if (latestWord) {
+                status.textContent = `Detected: ${latestWord}`;
+                status.style.color = '#2ecc71'; // Green color for success
+                
+                // Add to log
+                const log = document.querySelector('.detection-log');
+                const logEntry = document.createElement('div');
+                logEntry.textContent = `${new Date().toLocaleTimeString()}: ${latestWord}`;
+                logEntry.className = 'log-entry';
+                log.insertBefore(logEntry, log.firstChild);
+                
+                // Keep only last 5 entries
+                while (log.children.length > 5) {
+                    log.removeChild(log.lastChild);
+                }
+
+                // If we have multiple words, show them as a sentence
+                if (data.length > 1) {
+                    const sentenceHint = document.createElement('div');
+                    sentenceHint.className = 'sentence-hint';
+                    sentenceHint.textContent = `Sentence: ${data.join(' ')}`;
+                    log.insertBefore(sentenceHint, log.firstChild);
+                }
+            }
+        }
+        
+        // Update counter if provided
+        if (data.repetitions_remaining !== undefined) {
+            const counterValue = document.querySelector('.counter-value');
+            if (counterValue) {
+                counterValue.textContent = data.repetitions_remaining;
             }
         }
     };
@@ -210,3 +251,99 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     });
 });
+
+// Set selectedWord from the URL
+function getLessonFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const lesson = params.get('lesson');
+    return lesson ? lesson.replace(/_/g, ' ') : null;
+}
+selectedWord = getLessonFromURL();
+
+// Only update the selectedWord display if the element exists in the DOM
+if (selectedWord && document.getElementById('selectedWord')) {
+    document.getElementById('selectedWord').textContent = selectedWord;
+}
+
+// Function to update detection feedback
+function updateDetectionFeedback(words) {
+    const status = document.querySelector('.detection-status');
+    const log = document.querySelector('.detection-log');
+    
+    if (words && words.length > 0) {
+        const latestWord = words[words.length - 1];
+        status.textContent = `Detected: ${latestWord}`;
+        status.style.color = '#2ecc71'; // Green color for success
+        
+        // Add to log
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `${new Date().toLocaleTimeString()}: ${latestWord}`;
+        logEntry.className = 'log-entry';
+        log.insertBefore(logEntry, log.firstChild);
+        
+        // Keep only last 5 entries
+        while (log.children.length > 5) {
+            log.removeChild(log.lastChild);
+        }
+
+        // If we have multiple words, show a hint about sentence formation
+        if (words.length > 1) {
+            const sentenceHint = document.createElement('div');
+            sentenceHint.className = 'sentence-hint';
+            sentenceHint.textContent = `Words detected: ${words.join(', ')}`;
+            log.insertBefore(sentenceHint, log.firstChild);
+        }
+    } else {
+        status.textContent = 'Waiting for detection...';
+        status.style.color = '#666';
+    }
+}
+
+// Function to trigger confetti animation
+function triggerConfetti() {
+    const duration = 3 * 1000; // Increased to 5 seconds
+    const animationEnd = Date.now() + duration;
+    const defaults = { 
+        startVelocity: 50, // Increased velocity
+        spread: 360,
+        ticks: 100, // Increased ticks
+        zIndex: 0,
+        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'] // Added vibrant colors
+    };
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 100 * (timeLeft / duration); // Increased base particle count
+        
+        // Launch confetti from multiple positions
+        // Left side
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        
+        // Right side
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+
+        // Center
+        confetti({
+            ...defaults,
+            particleCount: particleCount * 0.5,
+            origin: { x: 0.5, y: 0.5 }
+        });
+    }, 100); // Reduced interval for more frequent bursts
+}
