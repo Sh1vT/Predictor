@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestura - Sign Language Playground</title>
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <button class="back-button" onclick="window.location.href='index.html'">
+            <span class="back-arrow">←</span> Back to Lessons
+        </button>
+        <div class="nav-brand">
+            <h1>Gestura</h1>
+        </div>
+    </div>
+
+    <!-- URL Input Modal -->
+    <div id="urlModal" class="modal">
+        <div class="modal-content">
+            <h2>Enter WebSocket URL</h2>
+            <input type="text" id="serverUrl" placeholder="Enter WebSocket URL" value="ws://localhost:8000/ws">
+            <button class="btn-primary" onclick="updateServerUrl()">Connect</button>
+        </div>
+    </div>
+
+    <!-- Detection Feedback -->
+    <div id="detectionFeedback" class="detection-feedback">
+        <div class="detection-status">Waiting for detection...</div>
+        <div class="detection-log"></div>
+    </div>
+
+    <!-- Split View Container -->
+    <div class="split-container">
+        <!-- Left Side - Webcam and Controls -->
+        <div class="split-left">
+            <div class="webcam-section">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                </div>
+                <div class="webcam-controls">
+                    <button class="btn-primary" onclick="startWebcam()">Start Webcam</button>
+                    <button class="btn-primary" onclick="stopWebcam()">Stop Webcam</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Translation -->
+        <div class="split-right">
+            <div class="translation-section">
+                <div class="detected-words">
+                    <h3>Detected Signs:</h3>
+                    <div id="detected-words-list" class="detection-box"></div>
+                </div>
+                
+                <div class="translation-container">
+                    <h3>Translation:</h3>
+                    <div id="translation-output" class="translation-box"></div>
+                    <button id="translate-btn" class="btn-primary">Translate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let isStreaming = false;
+        let socket;
+        let frameInterval;
+        let detectedWords = [];
+        const detectedWordsList = document.getElementById('detected-words-list');
+        const translationOutput = document.getElementById('translation-output');
+        const translateBtn = document.getElementById('translate-btn');
+
+        // Update WebSocket URL
+        function updateServerUrl() {
+            const newUrl = document.getElementById('serverUrl').value;
+            if (socket) {
+                socket.close();
+            }
+            document.getElementById('urlModal').classList.add('hidden');
+            openSocket(newUrl);
+        }
+
+        // Open WebSocket connection
+        function openSocket(url = null) {
+            const serverUrl = url || document.getElementById('serverUrl').value;
+            socket = new WebSocket(serverUrl);
+
+            socket.onopen = () => {
+                console.log('WebSocket connection established');
+                streamFrames();
+            };
+
+            socket.onmessage = (event) => {
+                const words = JSON.parse(event.data);
+                detectedWords = words;
+                updateDetectedWords();
+                updateDetectionFeedback(words);
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+            };
+
+            socket.onclose = (event) => {
+                console.log('WebSocket connection closed:', event.code, event.reason);
+                // Attempt to reconnect after a delay
+                setTimeout(() => {
+                    if (!isStreaming) return;
+                    console.log('Attempting to reconnect...');
+                    openSocket();
+                }, 1000);
+            };
+        }
+
+        // Update detected words display
+        function updateDetectedWords() {
+            detectedWordsList.innerHTML = detectedWords.join(' ');
+        }
+
+        // Update detection feedback
+        function updateDetectionFeedback(words) {
+            const status = document.querySelector('.detection-status');
+            const log = document.querySelector('.detection-log');
+            
+            if (words.length > 0) {
+                const latestWord = words[words.length - 1];
+                status.textContent = `Detected: ${latestWord}`;
+                status.style.color = '#2ecc71';
+                
+                // Add to log
+                const logEntry = document.createElement('div');
+                logEntry.textContent = `${new Date().toLocaleTimeString()}: ${latestWord}`;
+                logEntry.className = 'log-entry';
+                log.insertBefore(logEntry, log.firstChild);
+                
+                // Keep only last 5 entries
+                while (log.children.length > 5) {
+                    log.removeChild(log.lastChild);
+                }
+
+                // If we have multiple words, show them as a sentence
+                if (words.length > 1) {
+                    const sentenceHint = document.createElement('div');
+                    sentenceHint.className = 'sentence-hint';
+                    sentenceHint.textContent = `Sentence: ${words.join(' ')}`;
+                    log.insertBefore(sentenceHint, log.firstChild);
+                }
+            }
+        }
+
+        // Handle translation
+        async function translateWords() {
+            if (detectedWords.length === 0) {
+                translationOutput.textContent = 'No signs detected yet';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/nlp_process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ words: detectedWords })
+                });
+
+                const data = await response.json();
+                translationOutput.textContent = data.sentence;
+            } catch (error) {
+                console.error('Translation error:', error);
+                translationOutput.textContent = 'Error translating signs';
+            }
+        }
+
+        // Start webcam and stream frames
+        function startWebcam() {
+            if (!isStreaming) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        isStreaming = true;
+                        openSocket();
+                    })
+                    .catch(err => console.error('Error accessing webcam:', err));
+            }
+        }
+
+        // Stop webcam and streaming
+        function stopWebcam() {
+            if (isStreaming) {
+                let stream = video.srcObject;
+                let tracks = stream.getTracks();
+
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+                isStreaming = false;
+
+                clearInterval(frameInterval);
+
+                if (socket) {
+                    socket.close();
+                }
+            }
+        }
+
+        // Capture video frame and send it as Uint8Array
+        function captureAndSendFrame() {
+            let canvas = document.createElement('canvas');
+            let ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async (blob) => {
+                let arrayBuffer = await blob.arrayBuffer();
+                let uint8Array = new Uint8Array(arrayBuffer);
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(uint8Array);
+                }
+            }, 'image/jpeg', 0.8);
+        }
+
+        // Send frames at 30 FPS using WebSocket
+        function streamFrames() {
+            frameInterval = setInterval(() => {
+                if (isStreaming) {
+                    captureAndSendFrame();
+                }
+            }, 1000 / 30); // 30 FPS
+        }
+
+        // Event listeners
+        translateBtn.addEventListener('click', translateWords);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show URL modal on page load
+            document.getElementById('urlModal').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html> 
