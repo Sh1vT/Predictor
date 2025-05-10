@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ISL Project</title>
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+</head>
+<body>
+    <!-- Custom Header -->
+    <div class="custom-header" style="display: flex; align-items: center; justify-content: space-between; padding: 30px 40px 10px 40px;">
+        <!-- Left Logo -->
+        <img src="assets/gesturalogo.png" alt="Gestura Logo" style="height: 70px;">
+        <!-- Center Title and Subtitle -->
+        <div style="flex: 1; margin-left: 30px;">
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: bold;">Gestura</h1>
+            <div style="margin-top: 5px; color: #555; font-size: 1.1rem;">
+                Real-time Sign Language Interpreter and Training Utility
+            </div>
+        </div>
+        <!-- Right Logos -->
+        <div style="display: flex; gap: 30px;">
+            <img src="assets/swavlamban.png" alt="Swavlamban Logo" style="height: 70px;">
+            <img src="assets/azadi.jpg" alt="Azadi Ka Amrit Mahotsav Logo" style="height: 70px;">
+        </div>
+    </div>
+
+    <!-- Detection Feedback -->
+    <div id="detectionFeedback" class="detection-feedback">
+        <div class="detection-status">Waiting for detection...</div>
+        <div class="detection-log"></div>
+    </div>
+
+    <!-- URL Input Modal -->
+    <div id="urlModal" class="modal">
+        <div class="modal-content">
+            <h2>Enter WebSocket URL</h2>
+            <input type="text" id="serverUrl" placeholder="Enter WebSocket URL" value="ws://192.168.17.170:8000/ws">
+            <button class="btn-primary" onclick="updateServerUrl()">Connect</button>
+        </div>
+    </div>
+
+    <!-- Side Navigation -->
+    <!-- <div class="side-nav">
+        <div class="nav-item" onclick="selectWord('hello')">hello</div>
+        <div class="nav-item" onclick="selectWord('mother')">mother</div>
+        <div class="nav-item" onclick="selectWord('how')">how</div>
+        <div class="nav-item" onclick="selectWord('are')">are</div>
+        <div class="nav-item" onclick="selectWord('you')">you</div>
+        <div class="nav-item" onclick="selectWord('Lets')">Lets</div>
+        <div class="nav-item" onclick="selectWord('go')">go</div>
+        <div class="nav-item" onclick="selectWord('to')">to</div>
+        <div class="nav-item" onclick="selectWord('park')">park</div>
+        <div class="nav-item" onclick="selectWord('evening')">evening</div>
+    </div> -->
+
+    <!-- Selected Word Display -->
+    <!-- <div id="selectedWord" class="selected-word">Gestura</div> -->
+
+    <!-- Split View Container -->
+    <div class="split-container">
+        <!-- Left Side - Webcam and Counter -->
+        <div class="split-left">
+            <div class="webcam-section">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                </div>
+                <div class="webcam-controls">
+                    <button class="btn-primary" onclick="startWebcam()">Start Webcam</button>
+                    <button class="btn-primary" onclick="stopWebcam()">Stop Webcam</button>
+                </div>
+                <!-- Selected Word Display -->
+                <div id="selectedWord" class="selected-word"></div>
+                <!-- Counter moved below webcam -->
+                <div class="output-container">
+                    <h2>Practice the Sign to Learn</h2>
+                    <div id="counter-box">
+                        <div class="counter-value">5</div>
+                        <div class="counter-label">Repetitions Remaining</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Video Player -->
+        <div class="split-right">
+            <div class="video-player-container">
+                <video id="tutorialVideo" controls loop autoplay muted src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-controls">
+                    <button class="btn-primary" onclick="document.getElementById('tutorialVideo').play()">Play</button>
+                    <button class="btn-primary" onclick="document.getElementById('tutorialVideo').pause()">Pause</button>
+                    <button class="btn-primary" onclick="document.getElementById('tutorialVideo').currentTime = 0">Restart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <!-- <footer class="footer">
+        <p>&copy; 2025 ISL Project. All Rights Reserved.</p>
+    </footer> -->
+
+    <script src="scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</body>
+</html>

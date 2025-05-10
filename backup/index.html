@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestura - Learn Sign Language</title>
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Combined Navbar and Hero Section -->
+        <div class="hero-split-container">
+            <div class="nav-container">
+                <img src="assets/gesturalogo.png" alt="Gestura Logo" class="logo" />
+                <div class="brand-text">
+                    <h1>Gestura</h1>
+                    <p class="subtext">Real-time Sign Language Interpreter and Training Utility</p>
+                </div>
+                <div class="spacer"></div>
+                <img src="assets/swavlamban.png" alt="Swavlamban" class="nav-image" />
+                <img src="assets/azadi.jpg" alt="Azadi" class="nav-image" />
+            </div>
+        </div>
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <ul>
+                <li class="active">Path</li>
+                <li>About Us</li>
+                <li>Resources</li>
+                <li>SDG Goals</li>
+                <li>Dictionary</li>
+                <li>Report</li>
+            </ul>
+        </nav>
+
+        <!-- Lessons Section -->
+        <div class="lessons-section">
+            <h2>Start Learning</h2>
+            <p class="section-description">Choose a category to begin your sign language journey</p>
+            <div class="dropdown-container">
+                <!-- Beginner Signs -->
+                <div class="dropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('beginner-signs')">
+                        <h2>Beginner Signs</h2>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="beginner-signs">
+                        <div class="grid-layout">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intermediate Signs -->
+                <div class="dropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('intermediate-signs')">
+                        <h2>Intermediate Signs</h2>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="intermediate-signs">
+                        <div class="grid-layout">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sentence Formation -->
+                <div class="dropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('sentence-formation')">
+                        <h2>Sentence Formation</h2>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="sentence-formation">
+                        <div class="grid-layout">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quizzes -->
+                <div class="dropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('quizzes')">
+                        <h2>Quizzes</h2>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="quizzes">
+                        <div class="grid-layout">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- New Sections for each tab -->
+        
+        <div class="sdg-section">
+            <h2>SDG Goals</h2>
+            <p>Maecenas sed diam eget risus varius blandit sit amet non magna. Etiam porta sem malesuada magna mollis euismod.</p>
+        </div>
+        <div class="resources-section">
+            <h2>Resources</h2>
+            <p>Curabitur blandit tempus porttitor. Nullam quis risus eget urna mollis ornare vel eu leo.</p>
+        </div>
+        <div class="about-section">
+            <h2>About Us</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Gestura. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Function to toggle dropdown
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle('show');
+            const arrow = dropdown.previousElementSibling.querySelector('.dropdown-arrow');
+            arrow.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        // Function to create lesson items
+        function createLessonItem(lessonName, lessonUrl) {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = lessonName;
+            div.onclick = () => {
+                window.location.href = `predictor.html?lesson=${lessonName.toLowerCase().replace(/\s+/g, '_')}`;
+            };
+            return div;
+        }
+
+        // Function to populate dropdowns
+        async function populateDropdowns() {
+            try {
+                const response = await fetch('http://localhost:8000/api/lessons');
+                const lessons = await response.json();
+
+                // Populate each category
+                for (const [category, items] of Object.entries(lessons)) {
+                    const dropdownId = category.toLowerCase().replace(/\s+/g, '-');
+                    const dropdown = document.getElementById(dropdownId);
+                    if (dropdown) {
+                        const gridLayout = dropdown.querySelector('.grid-layout');
+                        if (gridLayout) {
+                            for (const [lessonName, lessonUrl] of Object.entries(items)) {
+                                gridLayout.appendChild(createLessonItem(lessonName, lessonUrl));
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching lessons:', error);
+            }
+        }
+
+        // Populate dropdowns when page loads
+        document.addEventListener('DOMContentLoaded', populateDropdowns);
+    </script>
+</body>
+</html> 
